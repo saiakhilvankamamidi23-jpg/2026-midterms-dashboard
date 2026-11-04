@@ -1,0 +1,46 @@
+name: Verify Green Dashboard
+on:
+  push:
+    paths:
+      - index.html
+      - .github/workflows/verify-green-dashboard.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check HTML structure and JavaScript syntax
+        shell: bash
+        run: |
+          node - <<'JS'
+          const fs=require('fs'),vm=require('vm');
+          const s=fs.readFileSync('index.html','utf8');
+          const script=s.match(/<script>\s*([\s\S]*?)\s*<\/script>/);
+          if(!script)throw Error('No app script');
+          new vm.Script(script[1]);
+          const must=['id="predictions-view"','id="results-view"','drawPredictions()','class="view-tab"','Nov 3, final','--bg:#07180f','INTERVAL=300000'];
+          for(const anchor of must)if(!s.includes(anchor))throw Error('Missing '+anchor);
+          for(const id of ['pred-house','pred-senate','pred-governor','pred-updated'])if(!s.includes('id="'+id+'"'))throw Error('Missing '+id);
+          console.log('PASS: JS parses and new green Predictions UI is present. HTML length',s.length);
+          JS
+      - name: Validate public deployed URL
+        shell: bash
+        run: |
+          python - <<'PY'
+          import time,urllib.request
+          url='https://saiakhilvankamamidi23-jpg.github.io/2026-midterms-dashboard/'
+          for i in range(16):
+            try:
+              with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'ElectionDashboardTest/1.0'}),timeout=12) as res:
+                raw=res.read().decode()
+                print("Public status",res.status,"bytes",len(raw),"attempt",i+1)
+                if res.status==200 and 'id="predictions-view"' in raw and '--bg:#07180f' in raw and 'function drawPredictions' in raw:
+                  print("PASS: New green site and predictions tab published over HTTPS")
+                  break
+            except Exception as e:print("Pending deploy",str(e)[:200])
+            if i==15:raise RuntimeError('Public page has not picked up latest Predictions code')
+            time.sleep(8)
+          PY
