@@ -29,6 +29,8 @@ jobs:
                 raw=r.read(3000000); data=json.loads(raw)
                 print('URL',u,'STATUS',r.status,'CORS',r.headers.get('Access-Control-Allow-Origin'),'CONTENT',r.headers.get('Content-Type'),'BYTES',len(raw))
                 print('JSON_TYPE',type(data).__name__,'TOP_KEYS',list(data)[:15] if isinstance(data,dict) else 'ARRAY_SIZE '+str(len(data)))
+                if isinstance(data,list) and len(data):
+                  print('SAMPLE_KEYS',list(data[0].keys())[:45]);print('SAMPLE_RECORD',json.dumps({k:v for k,v in data[0].items() if k in ('ecKey','stateAbbreviation','raceTitle','electionTitle','voteTimestamp','editorialStatus','totalVote','percentReporting')},default=str)[:850]); print('CANDIDATE_SAMPLE',json.dumps(data[0].get('candidates',[])[:2],default=str)[:1700]);print('WINNER_KEYS',sum(1 for x in data if any(c.get('winner') for c in x.get('candidates',[]))));print('STATE_KEYS_COUNT',sum(1 for x in data if x.get('stateAbbreviation')))
                 if isinstance(data,dict):
                   arr=data.get('races')
                   if isinstance(arr,list): print('RACES_COUNT',len(arr),'FIRST_KEYS',list(arr[0])[:30] if arr else [])
