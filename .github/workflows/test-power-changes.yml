@@ -1,0 +1,104 @@
+name: Test Power Changes Classification
+on:
+  push:
+    paths:
+      - index.html
+      - .github/workflows/test-power-changes.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check actual and possible flips, retentions, filters
+        shell: bash
+        run: |
+          node - <<'JS'
+          const fs=require('fs'),vm=require('vm'),assert=require('assert');
+          const doc=fs.readFileSync('index.html','utf8');
+          const m=doc.match(/<script>\s*([\s\S]*?)\s*<\/script>/);assert(m);
+          new vm.Script(m[1]);
+          const nodes={};
+          const node=id=>nodes[id]??=( {id,value:'',innerHTML:'',textContent:'',hidden:false,dataset:{},listeners:{},classList:{toggle(){}},setAttribute(k,v){this[k]=v},addEventListener(k,cb){this.listeners[k]=cb}});
+          const viewBtns=['results','predictions','changes'].map(k=>Object.assign(node('view-'+k),{dataset:{view:k}}));
+          const officeBtns=['all','senate','house','governor'].map(k=>Object.assign(node('office-'+k),{dataset:{changeOffice:k}}));
+          const dom={getElementById:node,addEventListener(){},querySelectorAll(s){return s==='[data-change-office]'?officeBtns:s==='.view-tab'?viewBtns:[]}};
+          const forecastRow=(key,state,name,held_by)=>({key,state,name,held_by,kind:key.startsWith('G-')?'Governor':'House',left_party:'D',left_candidate:'Candidate D',rep_candidate:'Candidate R',winner:'D',chance_left:.6,rating:'Toss-up',page:'/us/data',licence:'CC BY 4.0'});
+          const forecast=(rows)=>({licence:'CC BY 4.0',asOf:'2026-11-02',rows});
+          const models={
+            house:forecast([forecastRow('MI-07','MI','Michigan 7 House','R'),forecastRow('AL-01','AL','Alabama 1 House','D'),forecastRow('NY-01','NY','New York 1 House','I'),forecastRow('CA-02','CA','California 2 House','D')]),
+            senate:forecast([forecastRow('MI','MI','Michigan Senate','D')]),
+            governors:forecast([forecastRow('G-CA','CA','California Governor','R')])
+          };
+          const race=(key,state,title,dvotes,rvotes,winner)=>{
+            let candidates=[{fullName:'Candidate D',candidatePartyCode:'D',voteNum:dvotes,winner:winner==='D'},{fullName:'Candidate R',candidatePartyCode:'R',voteNum:rvotes,winner:winner==='R'}];
+            return {ecKey:key,stateAbbreviation:state,raceTitle:title,electionTitle:'General Election',totalVote:dvotes+rvotes,percentReporting:25,candidates,editorialStatus:winner?'called':'voting'}
+          };
+          const results={
+            '2026-HG.json':[
+              race('2026-HG-MI-7','MI','House District 7',60,40,'D'),
+              race('2026-HG-AL-1','AL','House District 1',40,60,null),
+              race('2026-HG-NY-1','NY','House District 1',60,40,'D'),
+              race('2026-HG-CA-2','CA','House District 2',0,0,null)
+            ],
+            '2026-SG.json':[race('2026-SG-MI','MI','Senate',60,40,'D')],
+            '2026-GG.json':[race('2026-GG-CA','CA','Governor',40,60,null)]
+          };
+          async function fakeFetch(url){
+            let data;
+            if(url.includes('/api/us/')){const m=url.match(/\/api\/us\/([^/?]+)/);data=models[m[1]];}
+            else if(url.includes('national-races')){const m=url.match(/(2026-[A-Z]{2}\.json)/);data=results[m[1]];}
+            else data={races:{}};
+            if(!data)throw Error('Unexpected URL '+url);
+            return {ok:true,status:200,json:async()=>data};
+          }
+          const ctx={document:dom,fetch:fakeFetch,AbortSignal,location:{protocol:'https:',href:'https://example.com'},setInterval:()=>1,console,Intl,Date};
+          vm.runInNewContext(m[1],ctx);
+          (async()=>{
+            for(let n=0;n<40;n++){
+              if(node('change-rd-called').textContent==='1'&&node('change-dr-possible').textContent==='1')break;
+              await new Promise(r=>setTimeout(r,60));
+            }
+            assert.equal(node('change-rd-called').textContent,'1','Republican to Democrat confirmed flip');
+            assert.equal(node('change-dr-possible').textContent,'1','Democrat to Republican possible flip');
+            assert.equal(node('change-dd-called').textContent,'1','Democrat retention');
+            assert.equal(node('change-rr-possible').textContent,'1','Republican possible retention');
+            const html=node('change-rows').innerHTML;
+            for(const label of ['Flipped','Possible flip','Retained','Possible retention','Other change','Awaiting result'])assert(html.includes(label),'Missing '+label);
+            node('change-transition').value='R-D';node('change-transition').listeners.change();
+            assert(node('change-rows').innerHTML.includes('Michigan 7 House'));
+            assert(!node('change-rows').innerHTML.includes('Alabama 1 House'));
+            node('change-transition').value='';node('change-transition').listeners.change();
+            officeBtns[3].listeners.click();
+            assert(node('change-rows').innerHTML.includes('California Governor'));
+            assert(!node('change-rows').innerHTML.includes('Michigan 7 House'));
+            officeBtns[0].listeners.click();
+            node('change-stage').value='possible';node('change-stage').listeners.change();
+            assert(!node('change-rows').innerHTML.includes('Michigan 7 House'),'Confirmed race in possible filter');
+            assert(node('change-rows').innerHTML.includes('Alabama 1 House'),'Possible flip absent');
+            node('change-stage').value='';node('change-stage').listeners.change();
+            viewBtns[2].listeners.click();
+            assert(node('changes-view').hidden===false);
+            assert(node('results-view').hidden===true);
+            assert(node('predictions-view').hidden===true);
+            console.log('PASS: Four transition categories, possible vs confirmed, unknown holder, pending seats, office filters and tab switch');
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
+      - name: Check public page serves Power Changes
+        shell: bash
+        run: |
+          python - <<'PY'
+          import urllib.request,time
+          url='https://saiakhilvankamamidi23-jpg.github.io/2026-midterms-dashboard/'
+          for n in range(20):
+            try:
+              with urllib.request.urlopen(url,timeout=12) as r:
+                html=r.read().decode()
+                if r.status==200 and 'id="changes-view"' in html and 'function renderPowerChanges()' in html and 'Possible retention' in html:
+                  print('PASS public Power Changes tab',r.status,len(html));break
+            except Exception as e:print('Retry',n,e)
+            if n==19:raise RuntimeError('Power Changes not deployed to public site')
+            time.sleep(7)
+          PY
