@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <meta name="color-scheme" content="dark"/>
-  <meta name="theme-color" content="#0a0f1b"/>
+  <meta name="color-scheme" content="light"/>
+  <meta name="theme-color" content="#eef9f0"/>
   <title>US Midterms 2026 — Election Night Dashboard</title>
   <style>
     :root{--bg:#0a0f1b;--panel:#131c2d;--panel2:#192539;--border:#29354a;--text:#f4f6fb;--muted:#99aac4;--blue:#477ef3;--red:#ef6068;--ind:#b9a2d9;--green:#53cd9a;--amber:#ffd084;--shadow:0 16px 48px rgba(0,0,0,.25)}
@@ -51,6 +51,69 @@
     .forecast-source{display:inline-flex;margin-top:7px;font-size:12px;color:#91eeb4}
     @media(max-width:850px){.pred-grid{grid-template-columns:1fr}}
     @media(max-width:600px){.view-switch{margin-top:13px}.view-tab{flex:1;text-align:center}.view-tip{flex-basis:100%;margin-left:0}.pred-card .big{font-size:33px}.pred-card{padding:17px}}
+
+
+    /* Light mint & sage palette, November 2026. Keep Democratic blue and Republican red. */
+    :root{
+      color-scheme:light;
+      --bg:#edf9f1;--panel:#ffffff;--panel2:#e7f5ea;--border:#c1e2cc;
+      --text:#163827;--muted:#547562;--blue:#2762c6;--red:#b82e47;
+      --ind:#70499e;--green:#177944;--amber:#9a6406;
+      --shadow:0 8px 26px rgba(35,95,59,.08);
+    }
+    body{background:radial-gradient(1000px 540px at 75% -17%,#cff0dc 0,transparent 74%),var(--bg);color:var(--text)}
+    a{color:#126c3e}
+    .topbar{background:#f4fff7f2;border-bottom:1px solid #bbdfc7}
+    .brand{color:#173b29}
+    .mark{background:linear-gradient(135deg,#1c9855,#9bedb1);box-shadow:0 0 18px rgba(45,139,76,.15)}
+    .tag{color:#426d52;border-color:#afdbc0}
+    .statusrow{color:#466e54}
+    .light.good{background:#168249;box-shadow:0 0 0 4px #16824915}
+    .eyebrow{color:#39744b}
+    .gradient{background:linear-gradient(100deg,#196b3c,#329966 62%,#70bb75);background-clip:text;-webkit-background-clip:text;color:transparent}
+    .sub,.small,.eyeline,.kicker,.subtle,.raceMeta,.sourceLink span,.secondary{color:var(--muted)}
+    .button{background:#e5f5e9;border-color:#b4dac1;color:#195a36}
+    .button:hover{background:#d1edd9}
+    .button.primary{background:#20794b;border-color:#20794b;color:#fff}
+    .button.primary:hover{background:#155c37}
+    .note{background:#def3e5;border:1px solid #b6dfc4;border-left:3px solid #1a9d5a;color:#25553a}
+    .card{background:linear-gradient(150deg,#ffffff,#f0fbf3);border-color:var(--border);box-shadow:var(--shadow)}
+    .toWin{background:#def0e3;color:#28623c}
+    .d{color:var(--blue)}.r{color:var(--red)}
+    .bar{background:#daeade}.underBar{color:#476b53}
+    .panel{background:#fff;box-shadow:var(--shadow)}
+    .focusitem{border-color:#e1efe5}
+    .winnerPill{background:#eaf3ec;color:#2e563b}
+    .pillD{background:#e4efff;color:#1f55a6}
+    .pillR{background:#ffe7eb;color:#a62a44}
+    .pillI{background:#eee5fb;color:#70499e}
+    .pillN{background:#e7f0e9;color:#4a6b55}
+    .infoBox p{color:#3c624a}
+    .infoBox strong{color:#173f28}
+    .sourceLink{background:#f2faf4;border-color:#cae6d2;color:#245a37}
+    .pillGroup{background:#e9f5ec;border-color:#c5e2cd}
+    .tab{color:#4d765d}
+    .tab.active{background:#207949;color:#fff}
+    .input,select{background:#ffffff;color:#183c2a;border-color:#b5d7bf}
+    .input::placeholder{color:#668975}
+    .raceTable th{background:#eaf7ee;color:#476e54}
+    .raceTable td{border-color:#e0eee4;color:#224632}
+    .raceTable tr:hover td{background:#f1faf4}
+    .compactbar{background:#deece1}.compactbar div{background:#4fa46b}
+    .view-tab{background:#eff9f1;color:#28593b;border-color:#badfc8}
+    .view-tab:hover{background:#dcf0e3}
+    .view-tab[aria-selected="true"]{background:#207949;color:#fff;border-color:#207949;box-shadow:0 4px 16px rgba(28,113,67,.16)}
+    .pred-intro p,.pred-card p{color:var(--muted)}
+    .pred-card{background:linear-gradient(145deg,#fff,#edfaef);border-color:#c6e4ce}
+    .pred-card h3{color:#315e3d}
+    .pred-card .big{color:#166f3d}
+    .pred-table th,.pred-table td{border-color:#dceee2}
+    .pred-table th{color:#4a6d57;background:#eaf7ed}
+    .pred-table td strong{color:#176d40}
+    .pred-explain{background:#e1f4e7;border-left-color:#35a768;color:#2c5c3d}
+    .forecast-source{color:#147446}
+    .footer{border-color:#bddfc8;color:#5a7964}
+    .warn{color:#8d5900}
 
   </style>
 </head>
