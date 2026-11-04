@@ -115,6 +115,51 @@
     .footer{border-color:#bddfc8;color:#5a7964}
     .warn{color:#8d5900}
 
+
+    /* Race-by-race forecast explorer: responsive for small phones */
+    .pred-controls{padding:14px 18px;display:flex;align-items:center;flex-wrap:wrap;gap:10px;border-bottom:1px solid var(--border)}
+    .pred-controls .input{min-width:175px;flex:1}
+    .pred-office-tabs{flex-wrap:wrap}
+    .pred-office-tab{min-height:38px}
+    .pred-controls select{max-width:100%}
+    .forecastLegend{font-size:12px;padding:12px 18px;color:#426f50;background:#f0f9f2;border-bottom:1px solid var(--border)}
+    .forecast-mobile-container{max-height:640px;overflow:auto}
+    .forecastTable{min-width:780px}
+    .forecastTable th{position:sticky;top:0;z-index:2}
+    .forecastTable td{vertical-align:middle}
+    .forecastTable strong{display:block;font-size:13px}
+    .forecastTable .pred-sub{display:block;margin-top:4px;font-size:11px;color:var(--muted);line-height:1.5}
+    .forecastTable .modelCandidate{font-weight:750}
+    .forecastTable .probability{font-size:17px;font-weight:800;color:#186b3d}
+    .forecastTable .party-D{color:#2762c6}.forecastTable .party-R{color:#b82e47}.forecastTable .party-I{color:#70499e}
+    .forecastTable .predBadge{display:inline-block;padding:5px 9px;border-radius:7px;background:#e8f5ec;color:#266344;font-weight:700;font-size:11px}
+    .forecastTable .predBadge.near{background:#fff0d5;color:#895b08}
+    .forecastTable .liveCall{color:#166a3d;font-weight:720}
+    .forecastTable .liveLead{color:#896009;font-weight:720}
+    .pred-list-footer{padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--muted);font-size:12px;border-top:1px solid var(--border)}
+    .pred-attribution{border-top:1px solid var(--border);padding:13px 18px;font-size:11px;line-height:1.7;color:var(--muted);background:#f6fbf7}
+    @media(max-width:700px){
+      .pred-controls .pillGroup{width:100%;justify-content:space-between}
+      .pred-office-tab{padding:9px 10px;flex:1}
+      .pred-controls select{flex:1;min-width:130px}
+      .pred-controls .input{order:2;flex-basis:100%}
+      .forecast-mobile-container{max-height:none;overflow:visible}
+      .forecastTable{min-width:0;width:100%;display:block}
+      .forecastTable thead{display:none}
+      .forecastTable tbody{display:grid;gap:10px;padding:13px}
+      .forecastTable tr{display:grid;padding:14px;border:1px solid #d2e9d8;border-radius:12px;background:#f8fdf9}
+      .forecastTable td{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:baseline;gap:6px 10px;padding:8px 0;border:0!important}
+      .forecastTable td:not(:last-child){border-bottom:1px solid #e5f1e9!important}
+      .forecastTable td:before{content:attr(data-label);font-size:11px;letter-spacing:.25px;font-weight:700;color:#597565;flex:0 0 94px}
+      .forecastTable td .cellBody{flex:1;min-width:0;text-align:right}
+      .forecastTable td .pred-sub{text-align:right}
+      .forecastTable tr.empty-row{display:block}
+      .forecastTable tr.empty-row td{display:block;text-align:center}
+      .forecastTable tr.empty-row td:before{display:none}
+      .pred-list-footer{flex-wrap:wrap}
+      .pred-list-footer .button{width:100%}
+    }
+
   </style>
 </head>
 <body>
@@ -132,7 +177,48 @@
     <section class="panel racePanel" aria-label="Detailed election races"><div class="panelhead"><div><h2>Race-by-race results</h2><div class="eyeline" id="tableCount">Search results as reports arrive</div><div class="eyeline" style="margin-top:5px">Votes counted / estimated final total · Estimates use the reporting percentage, not a known final turnout</div></div><span class="toWin" id="modeBadge">NATIONWIDE FEED</span></div><div class="controls"><div class="pillGroup" role="tablist" aria-label="Office"><button class="tab active" type="button" data-office="senate">Senate</button><button class="tab" type="button" data-office="house">House</button><button class="tab" type="button" data-office="governor">Governors</button></div><input class="input" id="search" type="search" placeholder="Search state, race or candidate…" aria-label="Search races"/><select id="state" aria-label="Filter state"><option value="">All states</option></select><select id="status" aria-label="Filter race status"><option value="">All statuses</option><option value="called">Called</option><option value="leading">Not called / leading</option></select></div><div style="overflow-x:auto"><table class="raceTable"><thead><tr><th>Race · vote totals</th><th>Current leader</th><th>Reporting</th><th>Status</th></tr></thead><tbody id="raceRows"><tr><td colspan="4" class="empty">Connecting to results…</td></tr></tbody></table></div></section>
     </div>
     <section id="predictions-view" class="view-pane" role="tabpanel" hidden>
-      <div class="pred-intro"><div class="eyebrow">Forecasts vs results · 2026 midterms</div><h2>Who was favored to win?</h2><p>These are the final published <strong>November 3, 2026 pre-election</strong> forecasts—not live probabilities or election calls. The election-night scenario below updates using current reported vote leaders. It is arithmetic, not a statistical forecast.</p></div>
+      <div class="pred-intro"><div class="eyebrow">Every state · every congressional district</div><h2>Race-by-race predictions</h2><p>Explore real pre-election model predictions for <strong>435 House districts, 35 Senate contests and 36 governor races</strong>. Compare each predicted winner and win chance against the live election status. Forecast odds are dated snapshots, <strong>not</strong> probabilities recalculated from tonight’s votes.</p></div>
+
+      <section class="panel pred-section" aria-label="All election race predictions">
+        <div class="panelhead">
+          <div><h2>All race forecasts</h2><div class="eyeline" id="pred-forecast-status" role="status">Connecting to election forecasts…</div></div>
+          <span class="toWin" id="pred-forecast-count">506 RACES EXPECTED</span>
+        </div>
+        <div class="pred-controls">
+          <div class="pillGroup pred-office-tabs" role="tablist" aria-label="Predicted office">
+            <button class="tab active pred-office-tab" type="button" data-pred-office="all" aria-selected="true">All</button>
+            <button class="tab pred-office-tab" type="button" data-pred-office="senate" aria-selected="false">Senate</button>
+            <button class="tab pred-office-tab" type="button" data-pred-office="house" aria-selected="false">House</button>
+            <button class="tab pred-office-tab" type="button" data-pred-office="governor" aria-selected="false">Governors</button>
+          </div>
+          <select id="pred-state" aria-label="Forecast state"><option value="">All states</option></select>
+          <input id="pred-search" class="input" type="search" aria-label="Search forecast by state district or candidate" placeholder="Search race, state or candidate…"/>
+          <select id="pred-rating" aria-label="Filter prediction strength">
+            <option value="">All forecast ratings</option>
+            <option value="toss">Toss-up</option>
+            <option value="lean">Lean</option>
+            <option value="likely">Likely</option>
+            <option value="safe">Safe</option>
+          </select>
+          <select id="pred-sort" aria-label="Sort race predictions">
+            <option value="closest">Closest races first</option>
+            <option value="state">State / district</option>
+            <option value="confidence">Most confident first</option>
+          </select>
+        </div>
+        <div class="forecastLegend">Win chance and rating are from a <strong>pre-election forecast</strong>. The Live count column comes from reported results. A lead is not a confirmed win.</div>
+        <div class="forecast-mobile-container">
+          <table class="pred-table forecastTable">
+            <thead><tr><th>State / race</th><th>Model predicted winner</th><th>Win chance</th><th>Forecast rating</th><th>Live count</th></tr></thead>
+            <tbody id="pred-rows"><tr><td colspan="5" class="empty">Loading model forecasts…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pred-list-footer">
+          <span id="pred-row-count" aria-live="polite">Loading race list…</span>
+          <button id="pred-more" class="button" type="button" hidden>Load 60 more races</button>
+        </div>
+        <div class="pred-attribution">Forecast source: <a href="https://www.pollingforecast.com/us/data" target="_blank" rel="noopener noreferrer">Polling Forecast</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>, model dated <span id="pred-asof">—</span>. Forecast values are published model estimates, not new calculations by this website. Live vote status: CNN/AP results feed when available.</div>
+      </section>
       <div class="pred-grid">
         <article class="pred-card"><h3>FiftyPlusOne · Democrats win House</h3><div class="big">99%</div><p>Senate control: 79% Democratic. Election Day final forecast, locked.</p><a class="forecast-source" target="_blank" rel="noopener" href="https://blog.fiftyplusone.news/p/the-final-polls-and-race-ratings-show-dem-wave">View original forecast ↗</a></article>
         <article class="pred-card"><h3>Poliwave · Democrats win House</h3><div class="big">&gt;99%</div><p>Senate control: 85% Democratic. Election Day archived simulation snapshot.</p><a class="forecast-source" target="_blank" rel="noopener" href="https://www.poliwave.com/us/fed/projection">View original forecast ↗</a></article>
@@ -251,6 +337,111 @@
     function populateStates(){const keep=el('state').value;const codes=[...new Set(current[office].map(r=>r.state))].sort((a,b)=>allStateNames[a].localeCompare(allStateNames[b]));el('state').innerHTML='<option value="">All states</option>'+codes.map(x=>'<option value="'+x+'">'+h(allStateNames[x])+'</option>').join('');if(codes.includes(keep))el('state').value=keep;}
     function paint(){drawCards();drawFocus();populateStates();renderRows();drawPredictions();el('modeBadge').textContent=mode==='national'?'NATIONWIDE AP FEED':mode==='partial'?'PARTIAL NATIONAL FEED':mode==='limited'?'22-STATE FALLBACK':'CONNECTING';}
 
+
+    // License: Polling Forecast CC BY 4.0; every contest and its model estimate is shown with attribution.
+    const FORECAST_API='https://www.pollingforecast.com/api/us/';
+    const FORECAST_ENDPOINTS={senate:'senate',house:'house',governor:'governors'};
+    const FORECAST_EXPECTED={senate:35,house:435,governor:36};
+    let forecastState={senate:[],house:[],governor:[]},forecastDates={},predOffice='all',predLimit=60,predLoading=false,predError='';
+
+    function forecastRows(){
+      const kinds=predOffice==='all'?['senate','house','governor']:[predOffice];
+      return kinds.flatMap(kind=>(forecastState[kind]||[]).map(r=>Object.assign({office:kind},r)));
+    }
+    function forecastPick(r){
+      const left=readParty(r.left_party),chosen=readParty(r.winner),chanceLeft=Number(r.chance_left);
+      if(!['D','R','I'].includes(chosen) || !Number.isFinite(chanceLeft))return {party:'?',name:'Forecast unavailable',chance:null};
+      const matchesLeft=chosen===left;
+      return {party:chosen,name:(matchesLeft?r.left_candidate:r.rep_candidate)||'Unnamed candidate',chance:Math.max(0,Math.min(1,matchesLeft?chanceLeft:1-chanceLeft))};
+    }
+    function forecastMatchLive(f){
+      const list=current[f.office]||[];
+      if(f.office==='house'){
+        const m=String(f.key||'').match(/^[A-Z]{2}-(\d{2})$/);
+        if(!m)return null;
+        const district=Number(m[1]);
+        return list.find(r=>r.state===f.state && (r.district==='At-large'?district===0:Number(r.district)===district))||null;
+      }
+      const stateRaces=list.filter(r=>r.state===f.state);
+      if(!stateRaces.length)return null;
+      if(stateRaces.length===1)return stateRaces[0];
+      return stateRaces.find(r=>Boolean(r.special)===Boolean(f.special))||null;
+    }
+    function forecastLiveText(f){
+      const live=forecastMatchLive(f);
+      if(!live)return {label:'No live feed',sub:'Not reported by active live source',cls:''};
+      if(live.called && live.projected)return {label:'Called · '+live.projected.name,sub:live.projected.party+' · projected winner',cls:'liveCall'};
+      if(live.leader && live.votes>0)return {label:'Leading · '+live.leader.name,sub:live.leader.party+' · '+live.leader.pct.toFixed(1)+'% of counted votes · NOT called',cls:'liveLead'};
+      return {label:'Awaiting votes',sub:'No counted votes or call available',cls:''};
+    }
+    function forecastStateOptions(){
+      const select=el('pred-state'),keep=select.value;
+      const states=[...new Set(forecastRows().map(r=>r.state).filter(st=>Boolean(allStateNames[st])))].sort((a,b)=>allStateNames[a].localeCompare(allStateNames[b]));
+      select.innerHTML='<option value="">All states</option>'+states.map(st=>'<option value="'+st+'">'+h(allStateNames[st])+'</option>').join('');
+      if(states.includes(keep))select.value=keep;
+    }
+    function renderForecasts(){
+      const all=forecastRows(),state=el('pred-state').value,query=el('pred-search').value.toLowerCase().trim(),rating=el('pred-rating').value,sort=el('pred-sort').value;
+      let shown=all.filter(r=>(!state||r.state===state)&&(!query||[r.name,r.key,r.state,r.left_candidate,r.rep_candidate,r.rating].join(' ').toLowerCase().includes(query))&&(!rating||String(r.rating||'').toLowerCase().includes(rating==='toss'?'toss':rating)));
+      shown.sort((a,b)=>{
+        if(sort==='state')return (allStateNames[a.state]||a.state).localeCompare(allStateNames[b.state]||b.state)||String(a.key).localeCompare(String(b.key));
+        const ac=forecastPick(a).chance,bc=forecastPick(b).chance;
+        const av=ac==null?-.5:ac,bv=bc==null?-.5:bc;
+        if(sort==='confidence')return bv-av||String(a.key).localeCompare(String(b.key));
+        return av-bv||String(a.key).localeCompare(String(b.key));
+      });
+      const counted=shown.slice(0,predLimit),missing=shown.length-counted.length;
+      el('pred-row-count').textContent='Showing '+fmt(counted.length)+' of '+fmt(shown.length)+' filtered forecasts ('+fmt(all.length)+' available)';
+      el('pred-forecast-count').textContent=fmt(Object.values(forecastState).reduce((n,x)=>n+x.length,0))+' / 506 FORECASTS';
+      const btn=el('pred-more');btn.hidden=missing<=0;btn.textContent='Show '+fmt(Math.min(60,missing))+' more races';
+      if(!all.length){el('pred-rows').innerHTML='<tr class="empty-row"><td colspan="5" class="empty">'+h(predError||'Connecting to forecasts…')+'</td></tr>';return;}
+      if(!shown.length){el('pred-rows').innerHTML='<tr class="empty-row"><td colspan="5" class="empty">No matching races. Try different search or state filters.</td></tr>';return;}
+      el('pred-rows').innerHTML=counted.map(r=>{
+        const pick=forecastPick(r),live=forecastLiveText(r),label=String(r.name||r.key);
+        const url=/^\/us\/[a-z0-9/-]+$/i.test(r.page||'')?'https://www.pollingforecast.com'+r.page:'https://www.pollingforecast.com/us/data';
+        const ratingText=r.rating||'Not rated',pct=pick.chance==null?'N/A':(pick.chance*100).toFixed(1)+'%';
+        const ratingClass=/toss/i.test(ratingText)?' near':'';
+        const officeName=r.office==='house'?'House':r.office==='senate'?'Senate':'Governor';
+        return '<tr>'+
+          '<td data-label="State / race"><div class="cellBody"><strong>'+h(label)+'</strong><span class="pred-sub">'+h(officeName)+' · '+h(r.key||'')+'</span></div></td>'+
+          '<td data-label="Model pick"><div class="cellBody"><strong class="modelCandidate party-'+h(pick.party)+'">'+h(pick.name)+'</strong><span class="pred-sub">'+h(pick.party)+' · forecast favorite</span></div></td>'+
+          '<td data-label="Win chance"><div class="cellBody"><strong class="probability">'+pct+'</strong><span class="pred-sub">Pre-election estimate</span></div></td>'+
+          '<td data-label="Rating"><div class="cellBody"><span class="predBadge'+ratingClass+'">'+h(ratingText)+'</span><span class="pred-sub"><a href="'+h(url)+'" target="_blank" rel="noopener noreferrer">Forecast source ↗</a></span></div></td>'+
+          '<td data-label="Live count"><div class="cellBody"><strong class="'+live.cls+'">'+h(live.label)+'</strong><span class="pred-sub">'+h(live.sub)+'</span></div></td>'+
+        '</tr>';
+      }).join('');
+    }
+    async function loadForecasts(){
+      if(predLoading)return;
+      predLoading=true;
+      const jobs=Object.entries(FORECAST_ENDPOINTS).map(async ([office,path])=>({office,data:await getJson(FORECAST_API+path)}));
+      const results=await Promise.allSettled(jobs);
+      const problems=[];
+      results.forEach((result,i)=>{
+        const office=Object.keys(FORECAST_ENDPOINTS)[i];
+        if(result.status!=='fulfilled'){problems.push(office+' unavailable');return;}
+        const d=result.value.data;
+        if(d?.licence!=='CC BY 4.0'||!Array.isArray(d?.rows)||!d.rows.length){problems.push(office+' returned an unsupported format');return;}
+        forecastState[office]=d.rows.filter(r=>r&&r.state&&r.key&&r.licence==='CC BY 4.0');
+        forecastDates[office]=d.asOf||'date unavailable';
+        if(forecastState[office].length!==FORECAST_EXPECTED[office])problems.push(office+' partial ('+forecastState[office].length+'/'+FORECAST_EXPECTED[office]+')');
+      });
+      const total=Object.values(forecastState).reduce((n,x)=>n+x.length,0);
+      predError=problems.join(' · ');
+      const dates=[...new Set(Object.values(forecastDates))].filter(Boolean);
+      el('pred-asof').textContent=dates.length?dates.join(' / '):'not supplied';
+      el('pred-forecast-status').textContent=total?
+        'Model dated '+(dates.join(' / ')||'unknown')+' · '+fmt(total)+' forecasts available'+(predError?' · '+predError:'')+' · live calls/leading refresh every 5 minutes':
+        'Forecast source unavailable · '+(predError||'try again later');
+      forecastStateOptions();renderForecasts();predLoading=false;
+    }
+    document.querySelectorAll('[data-pred-office]').forEach(btn=>btn.addEventListener('click',()=>{
+      predOffice=btn.dataset.predOffice;predLimit=60;
+      document.querySelectorAll('[data-pred-office]').forEach(x=>{const active=x===btn;x.classList.toggle('active',active);x.setAttribute('aria-selected',String(active))});
+      forecastStateOptions();renderForecasts();
+    }));
+    ['pred-state','pred-rating','pred-sort','pred-search'].forEach(id=>el(id).addEventListener(id==='pred-search'?'input':'change',()=>{predLimit=60;renderForecasts()}));
+    el('pred-more').addEventListener('click',()=>{predLimit+=60;renderForecasts()});
     function drawPredictions(){
       const types=[['house','house',0,0,435],['senate','senate',34,31,100],['governor','governor',6,8,50]];
       const national=mode==='national';
@@ -266,6 +457,7 @@
         number.innerHTML='<span class="d">D '+leaderD+'</span> <span style="color:var(--muted)">·</span> <span class="r">R '+leaderR+'</span>';
         detail.textContent='Called/held: D '+secureD+', R '+secureR+' · Uncalled vote leaders: D '+stats.ld+', R '+stats.lr+' · Independents/other with calls or leads: '+(stats.i+stats.li)+' · Unassigned: '+unassigned+'.';
       });
+      renderForecasts();
     }
     document.querySelectorAll('.view-tab').forEach(btn=>btn.addEventListener('click',()=>{
       const view=btn.dataset.view;
@@ -273,7 +465,7 @@
       for(const id of ['results','predictions'])el(id+'-view').hidden=id!==view;
     }));
     function setConnection(ok,message){el('dot').className='light '+(ok?'good':'bad');el('feed-status').textContent=ok?(mode==='national'?'National feed active':mode==='limited'?'Limited feed active':'Partial feed active'):'Connection unavailable';el('feedInfo').textContent=message;el('last-check').textContent=lastSuccess?(feedAsOf?'Count as of '+dateFmt(feedAsOf):'Fetched '+dateFmt(lastSuccess)):'No verified live data';}
-    async function refresh(){if(working)return;working=true;el('refresh').disabled=true;el('feed-status').textContent='Fetching results…';let data,errors=[];
+    async function refresh(){if(working)return;loadForecasts();working=true;el('refresh').disabled=true;el('feed-status').textContent='Fetching results…';let data,errors=[];
       const checks=await Promise.allSettled([getCNN(),getOA()]);
       if(checks[0].status==='fulfilled' && checks[0].value.mode==='national') data=checks[0].value;
       else if(checks[1].status==='fulfilled') data=checks[1].value;
