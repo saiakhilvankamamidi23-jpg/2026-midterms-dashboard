@@ -21,10 +21,10 @@ jobs:
           const script=s.match(/<script>\s*([\s\S]*?)\s*<\/script>/);
           if(!script)throw Error('No app script');
           new vm.Script(script[1]);
-          const must=['id="predictions-view"','id="results-view"','drawPredictions()','class="view-tab"','Nov 3, final','--bg:#07180f','INTERVAL=300000'];
+          const must=['id="predictions-view"','id="results-view"','drawPredictions()','class="view-tab"','Nov 3, final','--bg:#edf9f1','INTERVAL=300000'];
           for(const anchor of must)if(!s.includes(anchor))throw Error('Missing '+anchor);
           for(const id of ['pred-house','pred-senate','pred-governor','pred-updated'])if(!s.includes('id="'+id+'"'))throw Error('Missing '+id);
-          console.log('PASS: JS parses and new green Predictions UI is present. HTML length',s.length);
+          console.log('PASS: JavaScript parses; light green theme and Predictions UI are present. HTML length',s.length);
           JS
       - name: Validate public deployed URL
         shell: bash
@@ -37,8 +37,8 @@ jobs:
               with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'ElectionDashboardTest/1.0'}),timeout=12) as res:
                 raw=res.read().decode()
                 print("Public status",res.status,"bytes",len(raw),"attempt",i+1)
-                if res.status==200 and 'id="predictions-view"' in raw and '--bg:#07180f' in raw and 'function drawPredictions' in raw:
-                  print("PASS: New green site and predictions tab published over HTTPS")
+                if res.status==200 and 'id="predictions-view"' in raw and '--bg:#edf9f1' in raw and 'function drawPredictions' in raw:
+                  print("PASS: Light green site and predictions tab published over HTTPS")
                   break
             except Exception as e:print("Pending deploy",str(e)[:200])
             if i==15:raise RuntimeError('Public page has not picked up latest Predictions code')
