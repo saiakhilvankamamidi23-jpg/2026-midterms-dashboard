@@ -1,0 +1,92 @@
+name: Test Complete Forecast Explorer
+on:
+  push:
+    paths:
+      - index.html
+      - .github/workflows/test-all-race-forecasts.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Exercise forecasts, live leaders and filters
+        shell: bash
+        run: |
+          node - <<'JS'
+          const fs=require('fs'),vm=require('vm'),assert=require('assert');
+          const raw=fs.readFileSync('index.html','utf8');
+          const match=raw.match(/<script>\s*([\s\S]*?)\s*<\/script>/);
+          assert(match,'inline JS not present');
+          new vm.Script(match[1]);
+          const nodes={};
+          function node(id){
+            return nodes[id]||=({id,value:'',textContent:'',innerHTML:'',hidden:false,disabled:false,dataset:{},className:'',listeners:{},classList:{toggle(){}},addEventListener(t,fn){this.listeners[t]=fn},setAttribute(){}});
+          }
+          const forecastTabs=['all','senate','house','governor'].map(k=>{let v=node('button-'+k);v.dataset.predOffice=k;return v});
+          const doc={
+            getElementById:node,
+            querySelectorAll:(q)=>q==='[data-pred-office]'?forecastTabs:[],
+            addEventListener(){}
+          };
+          const forecast=(kind,rows)=>({dataset:kind,asOf:'2026-11-02',licence:'CC BY 4.0',rows:rows.map(r=>({...r,licence:'CC BY 4.0'}))});
+          const r=(key,state,name,leftCandidate,repCandidate,chance,page)=>({key,state,name,left_party:'D',left_candidate:leftCandidate,rep_candidate:repCandidate,winner:chance>=.5?'D':'R',chance_left:chance,rating:'Leans D',page});
+          const senate=forecast('senate',[r('MI','MI','Michigan Senate','Alice Senate','Bob Senate',.78,'/us/senate/mi')]);
+          const house=forecast('house',[r('MI-07','MI','Michigan 7th district','Alice House','Bob House',.75,'/us/house/mi-07'),r('AL-01','AL','Alabama 1st district','Alice Alabama','Bob Alabama',.15,'/us/house/al-01')]);
+          const gov=forecast('governor',[r('G-MI','MI','Michigan governor','Alice Governor','Bob Governor',.83,'/us/governors/mi')]);
+          const live=(state,key,name,kind)=>({stateAbbreviation:state,ecKey:key,electionTitle:'General Election',raceTitle:kind,editorialStatus:'voting',totalVote:100,percentReporting:20,candidates:[{fullName:name,candidatePartyCode:'D',voteNum:60,votePercentNum:60,winner:false},{fullName:'Opposition',candidatePartyCode:'R',voteNum:40,votePercentNum:40,winner:false}]});
+          async function fetchMock(url){
+            let obj;
+            if(url.includes('/api/us/house'))obj=house;
+            else if(url.includes('/api/us/senate'))obj=senate;
+            else if(url.includes('/api/us/governors'))obj=gov;
+            else if(url.includes('2026-HG.json'))obj=[live('MI','2026-HG-MI-7','Alice House','House')];
+            else if(url.includes('2026-SG.json'))obj=[live('MI','2026-SG-MI','Alice Senate','Senate')];
+            else if(url.includes('2026-GG.json'))obj=[live('MI','2026-GG-MI','Alice Governor','Governor')];
+            else obj={races:{},live:false};
+            return {ok:true,status:200,json:async()=>obj};
+          }
+          const ctx={document:doc,fetch:fetchMock,AbortSignal,location:{protocol:'https:',href:'https://example.com'},setInterval:()=>1,console,Intl,Date};
+          vm.runInNewContext(match[1],ctx);
+          (async()=>{
+            for(let i=0;i<30;i++){
+              if(node('pred-rows').innerHTML.includes('Alice House') && node('pred-rows').innerHTML.includes('Alice Senate'))break;
+              await new Promise(resolve=>setTimeout(resolve,50));
+            }
+            assert(node('pred-rows').innerHTML.includes('Alice House'),'House forecast not rendered');
+            assert(node('pred-rows').innerHTML.includes('Alice Senate'),'Senate forecast not rendered');
+            assert(node('pred-rows').innerHTML.includes('Alice Governor'),'Governor forecast not rendered');
+            assert(node('pred-rows').innerHTML.includes('75.0%'),'win probability not rendered');
+            assert(node('pred-rows').innerHTML.includes('Leading · Alice House'),'live leader not joined to forecast');
+            assert(node('pred-rows').innerHTML.includes('Alabama'),'all-states view missing multiple states');
+            assert(node('pred-asof').textContent==='2026-11-02','forecast date not shown');
+            forecastTabs[2].listeners.click();
+            assert(node('pred-rows').innerHTML.includes('Alice House'),'House tab missing House forecast');
+            assert(!node('pred-rows').innerHTML.includes('Alice Senate'),'House tab includes Senate');
+            node('pred-state').value='MI';node('pred-state').listeners.change();
+            assert(!node('pred-rows').innerHTML.includes('Alabama'),'state filter broken');
+            node('pred-search').value='Alice House';node('pred-search').listeners.input();
+            assert(node('pred-rows').innerHTML.includes('Alice House'),'candidate search broken');
+            assert(!node('pred-rows').innerHTML.includes('Alice Alabama'),'search filter broken');
+            console.log('PASS: all races display model picks, chances, live status, office tabs, state and candidate search, with dated source');
+          })().catch(e=>{console.error(e);process.exitCode=1});
+          JS
+      - name: Verify published forecast page over HTTPS
+        shell: bash
+        run: |
+          python - <<'PY'
+          import urllib.request,time
+          url='https://saiakhilvankamamidi23-jpg.github.io/2026-midterms-dashboard/'
+          for i in range(15):
+            try:
+              with urllib.request.urlopen(url,timeout=15) as resp:
+                s=resp.read().decode()
+                if resp.status==200 and 'id="pred-rows"' in s and 'pollingforecast.com/api/us/' in s and 'data-pred-office="all"' in s:
+                  print('PASS: Public site has state-by-state race forecasts, HTTP',resp.status,'bytes',len(s));break
+            except Exception as e:print('Retry',i,e)
+            if i==14:raise RuntimeError('Updated forecast explorer not reachable')
+            time.sleep(6)
+          PY
