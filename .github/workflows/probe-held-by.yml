@@ -16,7 +16,7 @@ jobs:
           import urllib.request, json, collections
           for category in ['house','senate','governors']:
             url='https://www.pollingforecast.com/api/us/'+category
-            with urllib.request.urlopen(url,timeout=25) as resp:
+            with urllib.request.urlopen(urllib.request.Request(url,headers={'User-Agent':'ElectionDashboard/1.0','Origin':'https://saiakhilvankamamidi23-jpg.github.io'}),timeout=25) as resp:
               data=json.load(resp)
             rows=data['rows']
             print(category,'TOTAL',len(rows),'held_by_counts',dict(collections.Counter(str(row.get('held_by')) for row in rows)))
