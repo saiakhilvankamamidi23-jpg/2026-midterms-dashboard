@@ -83,7 +83,18 @@ jobs:
             assert(node('changes-view').hidden===false);
             assert(node('results-view').hidden===true);
             assert(node('predictions-view').hidden===true);
-            console.log('PASS: Four transition categories, possible vs confirmed, unknown holder, pending seats, office filters and tab switch');
+            assert(node('raceRows').innerHTML.includes('Retained · D → D'),'Live Senate table missing D retention');
+            assert(node('focusList').innerHTML.includes('Retained · D → D'),'Senate battleground card missing retention');
+            vm.runInNewContext("office='house';renderRows();",ctx);
+            const liveHouse=node('raceRows').innerHTML;
+            assert(liveHouse.includes('Flipped · R → D'),'Live House table missing confirmed R to D flip');
+            assert(liveHouse.includes('Possible flip · D → R'),'Live House table missing leading D to R possible flip');
+            assert(liveHouse.includes('Previously held by Independent'),'Live House table missing independent-party qualification');
+            assert(liveHouse.includes('Awaiting votes'),'Live House table missing pending election status');
+            vm.runInNewContext("office='governor';renderRows();",ctx);
+            assert(node('raceRows').innerHTML.includes('Possible retention · R → R'),'Live governor table missing possible Republican retention');
+            assert(doc.includes('drawFocus();renderRows();predLoading=false;'),'Live results need redraw when previous-holder data arrives');
+            console.log('PASS: Live results, battlegrounds, possible and confirmed flips/retentions and Power Changes filters');
           })().catch(e=>{console.error(e);process.exitCode=1});
           JS
       - name: Check public page serves Power Changes
@@ -96,7 +107,7 @@ jobs:
             try:
               with urllib.request.urlopen(url,timeout=12) as r:
                 html=r.read().decode()
-                if r.status==200 and 'id="changes-view"' in html and 'function renderPowerChanges()' in html and 'Possible retention' in html:
+                if r.status==200 and 'id="changes-view"' in html and 'function renderPowerChanges()' in html and 'function livePowerStatus(' in html and 'Status · power change' in html:
                   print('PASS public Power Changes tab',r.status,len(html));break
             except Exception as e:print('Retry',n,e)
             if n==19:raise RuntimeError('Power Changes not deployed to public site')
