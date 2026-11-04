@@ -24,9 +24,9 @@ jobs:
           const must=['id="predictions-view"','id="results-view"','drawPredictions()','class="view-tab"','Nov 3, final','--bg:#edf9f1','INTERVAL=300000'];
           for(const anchor of must)if(!s.includes(anchor))throw Error('Missing '+anchor);
           for(const id of ['pred-house','pred-senate','pred-governor','pred-updated'])if(!s.includes('id="'+id+'"'))throw Error('Missing '+id);
-          const helper=script[1].match(/function estimatedVoteTotal\\(r\\)\\{[\\s\\S]*?\\n    \\}/);
+          const helper=script[1].slice(script[1].indexOf('function estimatedVoteTotal(r){'),script[1].indexOf('function voteCountText('));
           if(!helper)throw Error('Vote estimation function missing');
-          const estimate=vm.runInNewContext(helper[0]+'; estimatedVoteTotal');
+          const estimate=vm.runInNewContext(helper+'; estimatedVoteTotal');
           if(estimate({source:'CNN / AP',votes:10000,reporting:50})!==20000)throw Error('50% vote estimate incorrect');
           if(estimate({source:'CNN / AP',votes:10000,reporting:100})!==10000)throw Error('100% estimate incorrect');
           if(estimate({source:'CNN / AP',votes:10000,reporting:0})!==null)throw Error('Zero-reporting estimate must be unavailable');
