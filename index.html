@@ -48,7 +48,7 @@
     function parseCNN(rec,code){
       if(/primary|runoff/i.test(rec.electionTitle||'') || /primary/i.test(rec.raceTitle||'')) return null;
       const state=rec.stateAbbreviation||((rec.ecKey||'').match(/-(?:SG|HG|GG)-([A-Z]{2})(?:-|$)/)||[])[1];
-      if(!allStateNames[state])return null;
+      if(!allStateNames[state] || (code==='house' && state==='DC'))return null;
       const cand=(rec.candidates||[]).map(c=>({name:c.fullName||c.lastName||'Candidate',party:readParty(c.candidatePartyCode),votes:Number(c.voteNum)||0,pct:Number(c.votePercentNum)||0,winner:!!c.winner})).sort((a,b)=>b.votes-a.votes);
       const votes=Number(rec.totalVote)||cand.reduce((a,c)=>a+c.votes,0);
       if(votes){cand.forEach(c=>c.pct=100*c.votes/votes)}
@@ -58,7 +58,7 @@
       return {id:code==='house'?state+'-'+id:state+( /special/i.test(rec.raceTitle||'')?'-special':''),state,district,office:code,cands:cand,votes,called,projected:projected||null,leader:projected|| (votes?cand[0]:null),reporting:Number(rec.percentReporting)||0,reportedUnit:'expected vote',updated:rec.voteTimestamp||null,source:'CNN / AP',special:/special/i.test(rec.raceTitle||'')||/special/i.test(rec.electionTitle||'')};
     }
     function parseOA(rec,id,code,asof){
-      const state=id.split('-')[0]; if(!allStateNames[state])return null;
+      const state=id.split('-')[0]; if(!allStateNames[state] || (code==='house' && state==='DC'))return null;
       const cand=(rec.cands||[]).map(c=>({name:c.n||'Candidate',party:readParty(c.p),votes:Number(c.v)||0,pct:Number(c.pct)||0,winner:false})).sort((a,b)=>b.votes-a.votes);
       const votes=Number(rec.total)||cand.reduce((a,c)=>a+c.votes,0);
       return {id,state,district:code==='house'?(id.endsWith('-00')?'At-large':String(parseInt(id.split('-')[1]||'0',10))):'',office:code,cands:cand,votes,called:false,projected:null,leader:votes?cand[0]:null,reporting:rec.pct_in==null?null:Number(rec.pct_in),reportedUnit:'precincts / local reporting units',updated:asof||null,source:'Official states / Open America',special:/special/i.test(id)};
