@@ -160,12 +160,42 @@
       .pred-list-footer .button{width:100%}
     }
 
+
+    .view-switch{gap:8px}
+    .change-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:13px;margin:16px 0 23px}
+    .change-metric{padding:17px;border:1px solid #c7e5ce;background:#fff;border-radius:14px;box-shadow:var(--shadow);min-width:0}
+    .change-label{display:flex;align-items:center;flex-wrap:wrap;gap:8px;font-size:11px;color:#355e41;font-weight:700}
+    .transition-bubble{display:inline-block;border:1px solid #c9e2d2;background:#e9f5ec;color:#214d36;border-radius:6px;padding:5px 7px;font-weight:800;font-size:12px;white-space:nowrap}
+    .change-dr .transition-bubble{background:#ffebee;color:#a52b42;border-color:#f5c6cf}
+    .change-rd .transition-bubble{background:#eaf2ff;color:#245db9;border-color:#cadcf7}
+    .change-metric-value{font-size:38px;font-weight:850;color:#173e2a;line-height:1.1;letter-spacing:-.8px;margin-top:13px}
+    .change-metric-caption{font-size:11px;color:#547562;margin-top:3px}
+    .change-possible{font-size:12px;background:#f0f9f3;border-radius:8px;margin-top:13px;padding:10px;color:#305e42}
+    .change-possible span{font-size:19px;font-weight:800;color:#21643c}
+    .change-table .party-previous{font-weight:800}
+    .change-table .changeBadge{display:inline-block;font-weight:750;border:1px solid #cce1d1;border-radius:7px;background:#eef6f0;padding:6px 8px;white-space:nowrap;font-size:11px}
+    .change-table .changeBadge.flip{background:#fff0dd;color:#8c5810;border-color:#f3ddbd}
+    .change-table .changeBadge.confirmed{background:#e2f4e8;color:#166036;border-color:#b5dbbe}
+    .change-table .changeBadge.possible{background:#fff3df;color:#8a5c14;border-color:#f0dbb6}
+    .change-table .changeBadge.pending{background:#edf2ef;color:#587364}
+    @media(max-width:990px){.change-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    @media(max-width:600px){
+      .view-switch .view-tab{padding:12px 9px;font-size:12px}
+      .change-metrics{gap:10px}
+      .change-metric{padding:12px}
+      .change-metric-value{font-size:30px}
+      .change-label{font-size:10px}
+      .change-possible{font-size:11px;padding:7px}
+      .change-possible span{font-size:17px}
+      .change-table{min-width:0}
+    }
+
   </style>
 </head>
 <body>
   <div class="topbar"><div class="wrap toprow"><div class="brand"><span class="mark" aria-hidden="true"></span>U.S. Election Desk <span class="tag">MIDTERMS 2026</span></div><div class="statusrow"><span><span id="dot" class="light"></span><b id="feed-status">Connecting…</b></span><span id="last-check">—</span></div></div></div>
   <main class="wrap">
-    <nav class="view-switch" role="tablist" aria-label="Dashboard sections"><button type="button" class="view-tab" data-view="results" role="tab" aria-selected="true" aria-controls="results-view">Live Results</button><button type="button" class="view-tab" data-view="predictions" role="tab" aria-selected="false" aria-controls="predictions-view">Predictions</button><span class="view-tip">Actual calls and forecasts stay separate</span></nav>
+    <nav class="view-switch" role="tablist" aria-label="Dashboard sections"><button type="button" class="view-tab" data-view="results" role="tab" aria-selected="true" aria-controls="results-view">Live Results</button><button type="button" class="view-tab" data-view="predictions" role="tab" aria-selected="false" aria-controls="predictions-view">Predictions</button><button type="button" class="view-tab" data-view="changes" role="tab" aria-selected="false" aria-controls="changes-view">Power Changes</button><span class="view-tip">Confirmed flips vs possible flips</span></nav>
     <header class="hero"><div class="eyebrow">Tuesday, November 3, 2026 · Unofficial election-night returns</div><div class="heroRow"><div><h1>America <span class="gradient">Decides.</span></h1><p class="sub">Follow the race for the House, Senate and governorships. Called winners are displayed separately from candidates merely leading in the vote count.</p></div><div class="toolbuttons"><a class="button primary" href="https://www.poliwave.com/us/live/midterms-2026" target="_blank" rel="noopener noreferrer">Open national live results ↗</a><button class="button" type="button" id="refresh">↻ Refresh now</button><button class="button primary" type="button" id="toggle">Auto-refresh: ON</button></div></div><div class="note" role="status" id="notice">Checking national election feeds. New data will be requested every 5 minutes while this page is open.</div></header>
     <div id="results-view" class="view-pane" role="tabpanel">
     <section class="cards" aria-label="Balance of power">
@@ -241,6 +271,73 @@
         </div>
       </section>
       <div class="pred-explain"><strong>How to interpret this:</strong> A projected winner from the news feed is counted as called; an uncalled race with reported votes counts toward the leader scenario. Races with no reported leader remain unassigned. An early vote lead is not a win probability. The forecast percentages above are <strong>fixed pre-election snapshots</strong> and do not change every five minutes.</div>
+    </section>
+
+    <section id="changes-view" class="view-pane" role="tabpanel" hidden>
+      <div class="pred-intro">
+        <div class="eyebrow">2026 election · compare previous holders</div>
+        <h2>Power changes across America</h2>
+        <p>Compare the party that held each seat or governorship before the election with the <strong>called winner</strong> or the <strong>current vote leader</strong>. Flips and retentions are confirmed only for races called by the results provider. Uncalled leads appear as <strong>possible flips / retentions</strong>, not predictions or declared winners.</p>
+      </div>
+      <div class="change-metrics">
+        <article class="change-metric change-dr">
+          <div class="change-label"><span class="transition-bubble">D → R</span> Democratic to Republican</div>
+          <div class="change-metric-value" id="change-dr-called">—</div><div class="change-metric-caption">Confirmed flips</div>
+          <div class="change-possible"><span id="change-dr-possible">—</span> possible flips · R leading</div>
+        </article>
+        <article class="change-metric change-rd">
+          <div class="change-label"><span class="transition-bubble">R → D</span> Republican to Democratic</div>
+          <div class="change-metric-value" id="change-rd-called">—</div><div class="change-metric-caption">Confirmed flips</div>
+          <div class="change-possible"><span id="change-rd-possible">—</span> possible flips · D leading</div>
+        </article>
+        <article class="change-metric">
+          <div class="change-label"><span class="transition-bubble">D → D</span> Democrats retain</div>
+          <div class="change-metric-value" id="change-dd-called">—</div><div class="change-metric-caption">Confirmed retentions</div>
+          <div class="change-possible"><span id="change-dd-possible">—</span> possible retentions · D leading</div>
+        </article>
+        <article class="change-metric">
+          <div class="change-label"><span class="transition-bubble">R → R</span> Republicans retain</div>
+          <div class="change-metric-value" id="change-rr-called">—</div><div class="change-metric-caption">Confirmed retentions</div>
+          <div class="change-possible"><span id="change-rr-possible">—</span> possible retentions · R leading</div>
+        </article>
+      </div>
+      <section class="panel pred-section">
+        <div class="panelhead">
+          <div><h2>Every seat and governorship</h2><div class="eyeline" id="change-source-status" role="status">Loading previous holders and election results…</div></div>
+          <span class="toWin" id="change-completeness">506 CONTESTS</span>
+        </div>
+        <div class="pred-controls">
+          <div class="pillGroup change-offices" role="tablist" aria-label="Power change office">
+            <button class="tab active change-office" type="button" data-change-office="all" aria-selected="true">All</button>
+            <button class="tab change-office" type="button" data-change-office="senate" aria-selected="false">Senate</button>
+            <button class="tab change-office" type="button" data-change-office="house" aria-selected="false">House</button>
+            <button class="tab change-office" type="button" data-change-office="governor" aria-selected="false">Governors</button>
+          </div>
+          <select id="change-transition" aria-label="Filter party transition">
+            <option value="">All party changes</option>
+            <option value="D-R">D → R</option><option value="R-D">R → D</option>
+            <option value="D-D">D → D</option><option value="R-R">R → R</option>
+            <option value="other">Independent / unknown</option>
+          </select>
+          <select id="change-stage" aria-label="Filter by result status">
+            <option value="">All statuses</option>
+            <option value="confirmed">Confirmed calls</option>
+            <option value="possible">Possible · currently leading</option>
+            <option value="pending">Pending · no result yet</option>
+          </select>
+          <select id="change-state" aria-label="Filter by state"><option value="">All states</option></select>
+          <input id="change-search" class="input" type="search" placeholder="State, district, candidate…" aria-label="Search changes"/>
+        </div>
+        <div class="forecastLegend">The previous holder comes from Polling Forecast's <strong>held_by</strong> election baseline; the winner or leader comes from the live election feed. An independent seat, vacancy or unavailable previous holder is labeled separately. <strong>A lead is not a called winner.</strong></div>
+        <div class="forecast-mobile-container">
+          <table class="pred-table forecastTable change-table">
+            <thead><tr><th>Seat / office</th><th>Previously held by</th><th>Current result</th><th>Change in party</th><th>Votes</th></tr></thead>
+            <tbody id="change-rows"><tr class="empty-row"><td colspan="5" class="empty">Connecting to results…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pred-list-footer"><span id="change-row-count">Loading races…</span><button id="change-more" class="button" type="button" hidden>Load more</button></div>
+        <div class="pred-attribution">Previous-seat-party baseline: <a href="https://www.pollingforecast.com/us/data" target="_blank" rel="noopener noreferrer">Polling Forecast</a>, <a href="https://creativecommons.org/licenses/by/4.0/" target="_blank" rel="noopener noreferrer">CC BY 4.0</a>, dated <span id="change-asof">—</span>. Current winners/leaders: CNN/AP when available, with a limited official-state fallback. Data updates approximately every five minutes while the page is open.</div>
+      </section>
     </section>
   </main><footer class="footer"><div class="wrap footinner"><span>Built for the 2026 U.S. midterms · Counts are unofficial until certified · Separate predictions and live results; scenario assumes reported leaders hold.</span><span>Refresh interval: <strong>5 minutes</strong> · <span id="countdown">Next check: —</span></span></div></footer>
   <script>
@@ -433,7 +530,7 @@
       el('pred-forecast-status').textContent=total?
         'Model dated '+(dates.join(' / ')||'unknown')+' · '+fmt(total)+' forecasts available'+(predError?' · '+predError:'')+' · live calls/leading refresh every 5 minutes':
         'Forecast source unavailable · '+(predError||'try again later');
-      forecastStateOptions();renderForecasts();predLoading=false;
+      forecastStateOptions();renderForecasts();renderPowerChanges();predLoading=false;
     }
     document.querySelectorAll('[data-pred-office]').forEach(btn=>btn.addEventListener('click',()=>{
       predOffice=btn.dataset.predOffice;predLimit=60;
@@ -442,6 +539,87 @@
     }));
     ['pred-state','pred-rating','pred-sort','pred-search'].forEach(id=>el(id).addEventListener(id==='pred-search'?'input':'change',()=>{predLimit=60;renderForecasts()}));
     el('pred-more').addEventListener('click',()=>{predLimit+=60;renderForecasts()});
+
+    let changeOffice='all',changeLimit=60;
+    const CHANGE_TOTAL=506;
+    const CHANGE_TRANSITIONS=['D-R','R-D','D-D','R-R'];
+    function changeRowsAll(){
+      return ['senate','house','governor'].flatMap(office=>(forecastState[office]||[]).map(f=>{
+        const original=String(f.held_by||'').toUpperCase();
+        const prior=['D','R','I'].includes(original)?original:'?';
+        const live=forecastMatchLive(Object.assign({office},f));
+        const confirmed=Boolean(live&&live.called&&live.projected);
+        const leader=live&&live.leader&&live.votes>0?live.leader:null;
+        const winning=confirmed?live.projected:leader;
+        const party=winning?.party||'?';
+        const stage=confirmed?'confirmed':leader?'possible':'pending';
+        const transition=prior==='D'||prior==='R'?(['D','R'].includes(party)?prior+'-'+party:'other'):'other';
+        const flip=(prior==='D'||prior==='R')&&['D','R'].includes(party)&&prior!==party;
+        let description='Awaiting result';
+        if(stage==='confirmed')description=flip?'Flipped':prior===party?'Retained':'Other change';
+        else if(stage==='possible')description=flip?'Possible flip':prior===party?'Possible retention':'Possible other change';
+        return {office,f,prior,live,winning,party,stage,transition,description,flip};
+      }));
+    }
+    function drawChangeStateOptions(rows){
+      const select=el('change-state'),keep=select.value;
+      const states=[...new Set(rows.map(x=>x.f.state).filter(st=>allStateNames[st]))].sort((a,b)=>allStateNames[a].localeCompare(allStateNames[b]));
+      select.innerHTML='<option value="">All states</option>'+states.map(st=>'<option value="'+st+'">'+h(allStateNames[st])+'</option>').join('');
+      if(states.includes(keep))select.value=keep;
+    }
+    function renderPowerChanges(){
+      const all=changeRowsAll(),total=all.length,complete=total===CHANGE_TOTAL;
+      el('change-completeness').textContent=fmt(total)+' / '+CHANGE_TOTAL+' BASELINES';
+      const dates=[...new Set(Object.values(forecastDates))].filter(Boolean);
+      el('change-asof').textContent=dates.length?dates.join(' / '):'not supplied';
+      el('change-source-status').textContent=total?
+        'Previous party holder: '+fmt(total)+' contests'+(!complete?' (partial coverage)':'')+' · Live status: '+(mode==='national'?'nationwide feed':mode==='limited'?'partial official-state fallback':mode==='partial'?'partial national feed':'awaiting results')+' · '+(lastSuccess?'checked '+dateFmt(lastSuccess):'not yet checked'):
+        'Loading prior seat holders from forecast data…';
+      CHANGE_TRANSITIONS.forEach(code=>{
+        const id=code.toLowerCase().replace('-','');
+        el('change-'+id+'-called').textContent=total?fmt(all.filter(x=>x.transition===code&&x.stage==='confirmed').length):'—';
+        el('change-'+id+'-possible').textContent=total?fmt(all.filter(x=>x.transition===code&&x.stage==='possible').length):'—';
+      });
+      drawChangeStateOptions(all.filter(x=>changeOffice==='all'||x.office===changeOffice));
+      const transition=el('change-transition').value,stage=el('change-stage').value,state=el('change-state').value,search=el('change-search').value.toLowerCase().trim();
+      const filtered=all.filter(x=>
+        (changeOffice==='all'||x.office===changeOffice)&&(!transition||x.transition===transition)&&
+        (!stage||x.stage===stage)&&(!state||x.f.state===state)&&
+        (!search||[x.f.key,x.f.name,x.f.state,allStateNames[x.f.state]||'',x.winning?.name||'',x.f.left_candidate,x.f.rep_candidate].join(' ').toLowerCase().includes(search))
+      );
+      // Prioritize confirmed changes, then possible flips and retentions, then pending races.
+      const rank=x=>x.stage==='confirmed'?(x.flip?0:2):x.stage==='possible'?(x.flip?1:3):4;
+      filtered.sort((a,b)=>rank(a)-rank(b)||String(a.f.state).localeCompare(String(b.f.state))||String(a.f.key).localeCompare(String(b.f.key)));
+      const page=filtered.slice(0,changeLimit),remaining=filtered.length-page.length;
+      el('change-row-count').textContent='Showing '+fmt(page.length)+' of '+fmt(filtered.length)+' matching contests';
+      const more=el('change-more');more.hidden=remaining===0;more.textContent='Load '+fmt(Math.min(60,remaining))+' more';
+      if(!total){el('change-rows').innerHTML='<tr class="empty-row"><td colspan="5" class="empty">Previous-holder data is unavailable. Try refreshing the page.</td></tr>';return}
+      if(!filtered.length){el('change-rows').innerHTML='<tr class="empty-row"><td colspan="5" class="empty">No races match these filters.</td></tr>';return}
+      el('change-rows').innerHTML=page.map(x=>{
+        const office=x.office==='house'?'House':x.office==='senate'?'Senate':'Governor';
+        const former=x.prior==='D'?'Democratic':x.prior==='R'?'Republican':x.prior==='I'?'Independent':'Unknown / vacant';
+        const priorClass=x.prior==='D'?'party-D':x.prior==='R'?'party-R':'party-I';
+        const partyClass=x.party==='D'?'party-D':x.party==='R'?'party-R':'party-I';
+        const status=x.stage==='confirmed'?'Called':x.stage==='possible'?'Leading · not called':'Not reported';
+        const counted=x.live?fmt(x.live.votes)+' votes counted':'No live count';
+        const pct=x.live&&x.live.reporting!=null?' · '+Number(x.live.reporting).toFixed(1)+'% reporting':'';
+        const badgeClass=x.stage+' '+(x.flip?'flip':'');
+        return '<tr>'+
+          '<td data-label="Race"><div class="cellBody"><strong>'+h(x.f.name||x.f.key)+'</strong><span class="pred-sub">'+h(office)+' · '+h(x.f.key||'')+'</span></div></td>'+
+          '<td data-label="Before"><div class="cellBody"><strong class="party-previous '+priorClass+'">'+h(former)+'</strong><span class="pred-sub">Held before election</span></div></td>'+
+          '<td data-label="Now"><div class="cellBody"><strong class="'+partyClass+'">'+h(x.winning?.name||'No confirmed leader')+'</strong><span class="pred-sub">'+h(status)+(x.winning?' · '+h(x.party):'')+'</span></div></td>'+
+          '<td data-label="Party change"><div class="cellBody"><span class="changeBadge '+badgeClass+'">'+h(x.description)+'</span><span class="pred-sub">'+(x.stage!=='pending'?h(x.prior+' → '+x.party):'No change determined')+'</span></div></td>'+
+          '<td data-label="Live votes"><div class="cellBody"><strong>'+h(counted)+'</strong><span class="pred-sub">'+h(pct)+'</span></div></td>'+
+          '</tr>';
+      }).join('');
+    }
+    document.querySelectorAll('[data-change-office]').forEach(btn=>btn.addEventListener('click',()=>{
+      changeOffice=btn.dataset.changeOffice;changeLimit=60;
+      document.querySelectorAll('[data-change-office]').forEach(x=>{const on=x===btn;x.classList.toggle('active',on);x.setAttribute('aria-selected',String(on))});
+      renderPowerChanges();
+    }));
+    ['change-transition','change-stage','change-state','change-search'].forEach(id=>el(id).addEventListener(id==='change-search'?'input':'change',()=>{changeLimit=60;renderPowerChanges()}));
+    el('change-more').addEventListener('click',()=>{changeLimit+=60;renderPowerChanges()});
     function drawPredictions(){
       const types=[['house','house',0,0,435],['senate','senate',34,31,100],['governor','governor',6,8,50]];
       const national=mode==='national';
@@ -458,11 +636,12 @@
         detail.textContent='Called/held: D '+secureD+', R '+secureR+' · Uncalled vote leaders: D '+stats.ld+', R '+stats.lr+' · Independents/other with calls or leads: '+(stats.i+stats.li)+' · Unassigned: '+unassigned+'.';
       });
       renderForecasts();
+      renderPowerChanges();
     }
     document.querySelectorAll('.view-tab').forEach(btn=>btn.addEventListener('click',()=>{
       const view=btn.dataset.view;
       document.querySelectorAll('.view-tab').forEach(b=>b.setAttribute('aria-selected',String(b===btn)));
-      for(const id of ['results','predictions'])el(id+'-view').hidden=id!==view;
+      for(const id of ['results','predictions','changes'])el(id+'-view').hidden=id!==view;
     }));
     function setConnection(ok,message){el('dot').className='light '+(ok?'good':'bad');el('feed-status').textContent=ok?(mode==='national'?'National feed active':mode==='limited'?'Limited feed active':'Partial feed active'):'Connection unavailable';el('feedInfo').textContent=message;el('last-check').textContent=lastSuccess?(feedAsOf?'Count as of '+dateFmt(feedAsOf):'Fetched '+dateFmt(lastSuccess)):'No verified live data';}
     async function refresh(){if(working)return;loadForecasts();working=true;el('refresh').disabled=true;el('feed-status').textContent='Fetching results…';let data,errors=[];
