@@ -1,0 +1,26 @@
+name: Validate Prior Seat Party Data
+on:
+  push:
+    paths: [.github/workflows/probe-held-by.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe last-held party in per-race source
+        shell: bash
+        run: |
+          python - <<'PY'
+          import urllib.request, json, collections
+          for category in ['house','senate','governors']:
+            url='https://www.pollingforecast.com/api/us/'+category
+            with urllib.request.urlopen(url,timeout=25) as resp:
+              data=json.load(resp)
+            rows=data['rows']
+            print(category,'TOTAL',len(rows),'held_by_counts',dict(collections.Counter(str(row.get('held_by')) for row in rows)))
+            for prefix in ['MI','CA','AK','ME','PA']:
+              matches=[row for row in rows if row.get('state')==prefix][:2]
+              for row in matches: print('EXAMPLE',category,row.get('key'), 'held_by',repr(row.get('held_by')),'incumbent_running',row.get('incumbent_running'),'candidate',row.get('left_candidate'),row.get('rep_candidate'))
+          PY
