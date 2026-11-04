@@ -1,0 +1,37 @@
+name: Check Election Feeds
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - .github/workflows/check-feeds.yml
+permissions:
+  contents: read
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Probe real election API endpoints
+        run: |
+          python - <<'PY'
+          import urllib.request, urllib.error, json
+          urls = [
+            'https://politics.api.cnn.io/results/national-races/2026-SG.json',
+            'https://politics.api.cnn.io/results/national-races/2026-HG.json',
+            'https://politics.api.cnn.io/results/national-races/2026-GG.json',
+            'https://openamerica.io/elections/results.json?year=2026&office=Senate',
+            'https://openamerica.io/elections/results.json?year=2026&office=House',
+            'https://openamerica.io/elections/results.json?year=2026&office=Governor'
+          ]
+          for u in urls:
+            try:
+              req = urllib.request.Request(u, headers={'User-Agent':'Mozilla/5.0','Origin':'https://example.com','Accept':'application/json'})
+              with urllib.request.urlopen(req,timeout=10) as r:
+                raw=r.read(3000000); data=json.loads(raw)
+                print('URL',u,'STATUS',r.status,'CORS',r.headers.get('Access-Control-Allow-Origin'),'CONTENT',r.headers.get('Content-Type'),'BYTES',len(raw))
+                print('JSON_TYPE',type(data).__name__,'TOP_KEYS',list(data)[:15] if isinstance(data,dict) else 'ARRAY_SIZE '+str(len(data)))
+                if isinstance(data,dict):
+                  arr=data.get('races')
+                  if isinstance(arr,list): print('RACES_COUNT',len(arr),'FIRST_KEYS',list(arr[0])[:30] if arr else [])
+                  elif isinstance(arr,dict): print('RACES_COUNT',len(arr),'FIRST_KEYS',list(next(iter(arr.values())))[:30] if arr else [])
+            except Exception as exc: print('URL',u,'ERROR',type(exc).__name__,str(exc)[:350])
+          PY
